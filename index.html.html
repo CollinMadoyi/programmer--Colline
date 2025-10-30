@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <title>3D Movable Animated Phone</title>
+
+  <style>
+    :root {
+      --primary-color: #00C6FF;
+      --secondary-color: #0072ff;
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&h=1080&fit=crop') center/cover no-repeat fixed;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .phone-screen {
+      width: 450px;
+      height: 780px;
+      border-radius: 40px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+      position: absolute;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-size: 400% 400%;
+      animation: gradient-shift 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+      cursor: grab;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+      margin-top: 70px;
+    }
+    
+    .phone-screen:active { cursor: grabbing; transform: scale(1.03); }
+
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .status-bar, .info-bar { padding: 10px 15px; color: white; font-weight: 600; text-shadow: 0 0 5px rgba(0,0,0,0.5); display:flex; justify-content:space-between; }
+    .info-bar { text-align:center; color: var(--primary-color); }
+
+    .content {
+      flex: 1;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: var(--glass-border);
+      border-left: var(--glass-border);
+      color: white;
+      border-top-left-radius: 25px;
+      border-top-right-radius: 25px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 70px;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .content section { margin: 10px 15px; padding: 15px; border-radius: 15px; border:1px solid rgba(255,255,255,0.1); background-color: rgba(0,0,0,0.2); }
+
+    .profile { text-align:center; padding:20px 10px; border-radius:25px; }
+    .profile h2 { font-size:20px; font-weight:700; color: var(--primary-color); letter-spacing:1px; }
+    .profile-details { display:flex; justify-content:center; align-items:center; gap:30px; margin-top:15px; color:#ddd; }
+    .profile-pic { width:90px; height:90px; border-radius:50%; background:#ccc url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop') center/cover; border:3px solid var(--primary-color); box-shadow: 0 0 15px rgba(0,198,255,0.5); }
+
+    .stats p { margin:3px 0; font-size:14px; }
+    .buttons { margin-top:20px; }
+    button { padding:8px 15px; border:1px solid var(--primary-color); background: rgba(0,198,255,0.1); color: var(--primary-color); font-weight:600; border-radius:20px; margin:5px; cursor:pointer; transition: all 0.3s; backdrop-filter: blur(5px); }
+    button:hover { background: var(--primary-color); color:#000; box-shadow:0 0 10px var(--primary-color); }
+
+    .video-container { position:relative; width:100%; height:0; padding-bottom:56.25%; border-radius:15px; overflow:hidden; margin:15px 0; }
+    .video-container iframe { position:absolute; top:0; left:0; width:100%; height:100%; border-radius:15px; }
+
+    .video-post { position:relative; width:100%; height:400px; background:#000; overflow:hidden; border-radius:15px; margin:10px 0; }
+    .video-post video { width:100%; height:100%; object-fit:cover; border-radius:15px; position:absolute; }
+    .play-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(0,0,0,0.6); color:white; border:none; font-size:40px; border-radius:50%; width:70px; height:70px; cursor:pointer; transition:all 0.3s; border:2px solid white; z-index:10; }
+    .play-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .image-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+    .gallery-item { position: relative; height: 200px; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.3s ease; }
+    .gallery-item:hover { transform: scale(1.05); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 15px 10px 10px; color: white; }
+    .gallery-overlay h4 { margin: 0; font-size: 14px; font-weight: 600; }
+    .gallery-overlay p { margin: 3px 0 0; font-size: 11px; opacity: 0.9; }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .content section { animation: fadeInUp 0.6s ease-out; }
+    .content section:nth-child(1) { animation-delay: 0.1s; }
+    .content section:nth-child(2) { animation-delay: 0.2s; }
+    .content section:nth-child(3) { animation-delay: 0.3s; }
+    .content section:nth-child(4) { animation-delay: 0.4s; }
+    .content section:nth-child(5) { animation-delay: 0.5s; }
+
+    h3 { position: relative; padding-bottom: 10px; margin-bottom: 15px; }
+    h3::after { content: ''; position: absolute; bottom: 0; left: 0; width: 60px; height: 3px; background: var(--primary-color); border-radius: 2px; }
+
+    .video-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+
+    .dock { position:absolute; bottom:0; left:0; right:0; display:flex; justify-content:space-around; padding:10px 20px 20px; background-color: var(--glass-bg); backdrop-filter: blur(25px); border-top: var(--glass-border); border-top-left-radius:20px; border-top-right-radius:20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3); }
+    .dock-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(0,198,255,0.1); color: var(--primary-color); font-size: 22px; cursor: pointer; transition: all 0.3s ease; }
+    .dock-icon:hover { background: var(--primary-color); color: #000; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,198,255,0.4); }
+
+    .social-icons { position:absolute; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:15px; z-index:999; }
+    .social-icons.left { left:20px; } .social-icons.right { right:20px; }
+    .social-icons a { display:flex; justify-content:center; align-items:center; width:50px; height:50px; border-radius:50%; color:white; font-size:24px; text-decoration:none; transition:all 0.3s ease; box-shadow:0 4px 15px rgba(0,0,0,0.6); }
+    .social-icons a.facebook { background: linear-gradient(135deg, #1877f2, #0d5dbf); }
+    .social-icons a.instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .social-icons a.twitter { background: linear-gradient(135deg, #1da1f2, #0c85d0); }
+    .social-icons a.youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
+    .social-icons a.tiktok { background: linear-gradient(135deg, #000000, #fe2c55); }
+    .social-icons a:hover { transform: scale(1.15) rotate(5deg); box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
+  </style>
+</head>
+
+<body>
+  <div class="phone-screen" id="phone">
+    <div class="status-bar">
+      <span>7:45 AM</span><span>📶 🔋</span>
+    </div>
+    <div class="info-bar">Monday, Oct 27 | ☁ 22°C</div>
+
+    <div class="content" id="scroll-content">
+      <section class="profile">
+        <h2>Software Engineer</h2>
+        <div class="profile-details">
+          <div class="profile-pic"></div>
+          <div class="stats">
+            <p><strong>2</strong> posts</p>
+            <p><strong>40k</strong> followers</p>
+            <p><strong>6</strong> following</p>
+          </div>
+        </div>
+        <h3>THE COLLINES</h3>
+        <div class="buttons">
+          <button class="edit">Edit profile</button>
+          <button class="share">Share profile</button>
+        </div>
+      </section>
+
+      <section>
+        <h3><i class="fas fa-code"></i> Software Engineering Sectors</h3>
+        <div class="image-gallery">
+          <div class="gallery-item">
+            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop" alt="Web Development">
+            <div class="gallery-overlay">
+              <h4>Web Development</h4>
+              <p>Full-stack & Frontend</p>
+            </div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=300&fit=crop" alt="Mobile Development">
+            <div class="gallery-overlay">
+              <h4>Mobile Development</h4>
+              <p>iOS & Android Apps</p>
+            </div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop" alt="AI & Machine Learning">
+            <div class="gallery-overlay">
+              <h4>AI & ML</h4>
+              <p>Deep Learning & NLP</p>
+            </div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop" alt="Cloud Computing">
+            <div class="gallery-overlay">
+              <h4>Cloud Computing</h4>
+              <p>AWS, Azure & GCP</p>
+            </div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&h=300&fit=crop" alt="Cybersecurity">
+            <div class="gallery-overlay">
+              <h4>Cybersecurity</h4>
+              <p>Security & Protection</p>
+            </div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop" alt="Data Science">
+            <div class="gallery-overlay">
+              <h4>Data Science</h4>
+              <p>Analytics & Insights</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3><i class="fas fa-video"></i> Featured Videos</h3>
+        <div class="video-grid">
+          <div class="video-container">
+            <iframe src="https://youtu.be/KW6frxiyZts?si=vla2-ru_K05DnrsN" title="Software Engineering Tutorial" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3><i class="fas fa-fire"></i> Tech Showcase Reels</h3>
+        <div class="video-grid">
+          <div class="video-post">
+            <video class="reel-video" loop muted playsinline>
+              <source src="https://storage.googleapis.com/web-dev-assets/video-and-source-tags/chrome.mp4" type="video/mp4">
+            </video>
+            <button class="play-btn"><i class="fas fa-play"></i></button>
+          </div>
+          <div class="video-post">
+            <video class="reel-video" loop muted playsinline>
+              <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            </video>
+            <button class="play-btn"><i class="fas fa-play"></i></button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3><i class="fas fa-graduation-cap"></i> Learning Resources</h3>
+        <div class="video-grid">
+          <div class="video-container">
+            <iframe src="https://youtu.be/oWRI6xKEZMk?si=9qC0SwblbqvlLUZ-" title="Learn Programming" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <div class="video-container">
+            <iframe src="https://youtu.be/yKSAn0VvvrE?si=ISjRW9Pox49k78On" title="Web Development" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="dock">
+      <div class="dock-icon"><i class="fas fa-home"></i></div>
+      <div class="dock-icon"><i class="fas fa-search"></i></div>
+      <div class="dock-icon"><i class="fas fa-plus"></i></div>
+      <div class="dock-icon"><i class="fas fa-bell"></i></div>
+      <div class="dock-icon"><i class="fas fa-user"></i></div>
+    </div>
+  </div>
+  
+  <div class="social-icons left">
+    <a href="#" class="facebook"><i class="fab fa-facebook-f"></i></a>
+    <a href="#" class="instagram"><i class="fab fa-instagram"></i></a>
+    <a href="#" class="twitter"><i class="fab fa-twitter"></i></a>
+  </div>
+
+  <div class="social-icons right">
+    <a href="#" class="youtube"><i class="fab fa-youtube"></i></a>
+    <a href="#" class="tiktok"><i class="fab fa-tiktok"></i></a>
+  </div>
+
+  <script>
+    // 3D rotation
+    const phone = document.getElementById('phone');
+    let isDragging = false, startX, startY, currentX=0, currentY=0;
+    const MAX_ROTATION = 15;
+
+    const applyRotation = (e) => {
+      const clientX = e.clientX || e.touches[0].clientX;
+      const clientY = e.clientY || e.touches[0].clientY;
+      const deltaX = clientX - startX;
+      const deltaY = clientY - startY;
+      const rotationY = Math.min(Math.max(deltaX*0.05, -MAX_ROTATION), MAX_ROTATION);
+      const rotationX = Math.min(Math.max(deltaY*-0.05, -MAX_ROTATION), MAX_ROTATION);
+      currentX = rotationX; currentY = rotationY;
+      phone.style.transform = rotateX(${currentX}deg) rotateY(${currentY}deg);
+    }
+
+    const startDrag = (e) => { isDragging=true; startX=e.clientX||e.touches[0].clientX; startY=e.clientY||e.touches[0].clientY; phone.style.transition='none'; };
+    const stopDrag = () => { if(isDragging){ isDragging=false; phone.style.transition='transform 0.5s ease-out'; phone.style.transform='rotateX(0deg) rotateY(0deg)'; currentX=0; currentY=0;} };
+
+    phone.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', e=>{if(isDragging){e.preventDefault(); applyRotation(e);} });
+    document.addEventListener('mouseup', stopDrag);
+    phone.addEventListener('touchstart', e=>{e.preventDefault(); startDrag(e);});
+    phone.addEventListener('touchmove', e=>{if(isDragging){applyRotation(e);}});
+    phone.addEventListener('touchend', stopDrag);
+
+    // Video play/pause for all videos
+    const reelVideos = document.querySelectorAll('.reel-video');
+    const playBtns = document.querySelectorAll('.play-btn');
+    
+    playBtns.forEach((playBtn, index) => {
+      const video = playBtn.parentElement.querySelector('.reel-video');
+      if (!video) return;
+      
+      playBtn.addEventListener('click', () => {
+        if(video.paused){
+          video.play().then(() => {
+            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            playBtn.style.opacity = '0';
+          }).catch(() => {
+            playBtn.style.opacity = '1';
+          });
+        } else {
+          video.pause();
+          playBtn.innerHTML = '<i class="fas fa-play"></i>';
+          playBtn.style.opacity = '1';
+        }
+      });
+      
+      video.addEventListener('pause', () => {
+        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        playBtn.style.opacity = '1';
+      });
+      
+      video.addEventListener('play', () => {
+        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        playBtn.style.opacity = '0';
+      });
+      
+      video.addEventListener('click', () => {
+        if(video.paused){
+          video.play();
+        } else {
+          video.pause();
+        }
+      });
+    });
+
+    // Gallery item click animation
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    galleryItems.forEach(item => {
+      item.addEventListener('click', function() {
+        this.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+        }, 300);
+      });
+    });
+  </script>
+</body>
+</html>
